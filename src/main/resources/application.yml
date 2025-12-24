@@ -1,0 +1,160 @@
+spring:
+  application:
+    name: autumn-banking-system
+  
+  profiles:
+    active: dev
+
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# Configuración de Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Configuración de la aplicación
+autumn:
+  security:
+    jwt:
+      expiration: 86400000 # 24 horas en milisegundos
+  transfer:
+    min-amount: 1.00
+    max-amount-without-approval: 10000.00
+  idempotency:
+    ttl-hours: 24
+
+---
+# Perfil de DESARROLLO
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/autumn_dev
+    username: autumn_user
+    password: autumn_pass
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 4
+          min-idle: 2
+
+autumn:
+  security:
+    jwt:
+      secret: dev-secret-key-change-in-production-minimum-256-bits-required-for-hs256-algorithm
+
+logging:
+  level:
+    sys.azentic.autumn: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+---
+# Perfil de TESTING
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5433/autumn_test
+    username: test_user
+    password: test_pass
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  
+  data:
+    redis:
+      host: localhost
+      port: 6380
+
+autumn:
+  security:
+    jwt:
+      secret: test-secret-key-only-for-testing-purposes-minimum-256-bits-required
+
+logging:
+  level:
+    sys.azentic.autumn: INFO
+
+---
+# Perfil de PRODUCCIÓN
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: true
+
+autumn:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+
+logging:
+  level:
+    sys.azentic.autumn: INFO
+    org.springframework: WARN

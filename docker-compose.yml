@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: autumn-postgres
+    environment:
+      POSTGRES_DB: autumn_dev
+      POSTGRES_USER: autumn_user
+      POSTGRES_PASSWORD: autumn_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autumn_user -d autumn_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - autumn-network
+
+  # Cache Redis
+  redis:
+    image: redis:7-alpine
+    container_name: autumn-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - autumn-network
+
+  # Aplicación Spring Boot
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autumn-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/autumn_dev
+      SPRING_DATASOURCE_USERNAME: autumn_user
+      SPRING_DATASOURCE_PASSWORD: autumn_pass
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - autumn-network
+    restart: unless-stopped
+
+networks:
+  autumn-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

@@ -1,0 +1,26 @@
+# Ignorar archivos innecesarios en el build de Docker
+
+target/
+!target/autumn-*.jar
+
+.mvn/wrapper/maven-wrapper.jar
+.git
+.gitignore
+*.md
+*.log
+
+# IDEs
+.idea
+.vscode
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporal
+*.tmp
+*.swp
+*.bak
