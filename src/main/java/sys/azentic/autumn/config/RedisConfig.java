@@ -7,8 +7,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
 
 import java.time.Duration;
 
@@ -47,9 +47,9 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
         
-        // Usar GenericJackson2JsonRedisSerializer para los valores (JSON)
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // Usar GenericToStringSerializer para los valores
+        template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
+        template.setHashValueSerializer(new GenericToStringSerializer<>(Object.class));
         
         template.afterPropertiesSet();
         return template;

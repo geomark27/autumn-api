@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sys.azentic.autumn.dto.response.AccountResponse;
+import sys.azentic.autumn.service.AccountService;
 
+import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -22,8 +25,7 @@ import java.util.UUID;
 @Slf4j
 public class AccountController {
 
-    // TODO: Inyectar AccountService cuando se implemente
-    // private final AccountService accountService;
+    private final AccountService accountService;
 
     /**
      * Consulta una cuenta por su ID.
@@ -35,10 +37,9 @@ public class AccountController {
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable UUID id) {
         log.info("Consultando cuenta con ID: {}", id);
         
-        // TODO: Implementar lógica
-        // AccountResponse response = accountService.getAccountById(id);
+        AccountResponse response = accountService.getAccountById(id);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -51,10 +52,9 @@ public class AccountController {
     public ResponseEntity<AccountResponse> getAccountByNumber(@PathVariable String accountNumber) {
         log.info("Consultando cuenta con número: {}", accountNumber);
         
-        // TODO: Implementar lógica
-        // AccountResponse response = accountService.getAccountByNumber(accountNumber);
+        AccountResponse response = accountService.getAccountByNumber(accountNumber);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -64,12 +64,11 @@ public class AccountController {
      * @return Saldo disponible
      */
     @GetMapping("/{id}/balance")
-    public ResponseEntity<?> getAccountBalance(@PathVariable UUID id) {
+    public ResponseEntity<Map<String, BigDecimal>> getAccountBalance(@PathVariable UUID id) {
         log.info("Consultando saldo de cuenta ID: {}", id);
         
-        // TODO: Implementar lógica
-        // BigDecimal balance = accountService.getBalance(id);
+        BigDecimal balance = accountService.getBalance(id);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("balance", balance));
     }
 }

@@ -27,6 +27,16 @@ management:
     health:
       show-details: when-authorized
 
+# Configuración de Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+
 # Configuración de la aplicación
 autumn:
   security:

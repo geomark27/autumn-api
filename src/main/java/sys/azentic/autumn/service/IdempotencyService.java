@@ -77,6 +77,25 @@ public class IdempotencyService {
     }
 
     /**
+     * Lista todas las entradas de idempotencia (clave -> transferId) almacenadas en Redis.
+     * Utilizado principalmente para debug en entorno de desarrollo.
+     *
+     * @return mapa con la clave completa de Redis y el valor (transferId) en formato String
+     */
+    public java.util.Map<String, String> listAllIdempotencyEntries() {
+        java.util.Set<String> keys = redisTemplate.keys(IDEMPOTENCY_KEY_PREFIX + "*");
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        if (keys == null || keys.isEmpty()) {
+            return result;
+        }
+        for (String key : keys) {
+            Object val = redisTemplate.opsForValue().get(key);
+            result.put(key, val != null ? val.toString() : null);
+        }
+        return result;
+    }
+
+    /**
      * Elimina una clave de idempotencia (solo para casos especiales, como testing).
      */
     public void delete(UUID idempotencyKey) {

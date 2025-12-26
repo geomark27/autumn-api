@@ -7,8 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sys.azentic.autumn.dto.request.TransferRequest;
+import sys.azentic.autumn.dto.response.IdempotencyKeyResponse;
 import sys.azentic.autumn.dto.response.TransferResponse;
+import sys.azentic.autumn.service.TransferService;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,8 +28,29 @@ import java.util.UUID;
 @Slf4j
 public class TransferController {
 
-    // TODO: Inyectar TransferService cuando se implemente
-    // private final TransferService transferService;
+    private final TransferService transferService;
+
+    /**
+     * Genera un nuevo UUID para idempotencia.
+     * 
+     * Usar este endpoint ANTES de hacer una transferencia:
+     * 1. GET /api/v1/transfers/generate-key → Obtiene UUID
+     * 2. POST /api/v1/transfers → Envía transferencia con ese UUID
+     * 
+     * @return UUID único para usar en la próxima transferencia
+     */
+    @GetMapping("/generate-key")
+    public ResponseEntity<IdempotencyKeyResponse> generateIdempotencyKey() {
+        UUID newKey = UUID.randomUUID();
+        log.debug("Nueva clave de idempotencia generada: {}", newKey);
+        
+        IdempotencyKeyResponse response = IdempotencyKeyResponse.builder()
+            .idempotencyKey(newKey)
+            .message("Use esta clave en el campo 'idempotencyKey' de la próxima transferencia")
+            .build();
+        
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * Crea una nueva transferencia.
@@ -38,18 +62,7 @@ public class TransferController {
     public ResponseEntity<TransferResponse> createTransfer(@Valid @RequestBody TransferRequest request) {
         log.info("Solicitud de transferencia recibida. IdempotencyKey: {}", request.getIdempotencyKey());
         
-        // TODO: Implementar lógica de negocio
-        // TransferResponse response = transferService.createTransfer(request);
-        
-        // Placeholder temporal
-        TransferResponse response = TransferResponse.builder()
-            .id(UUID.randomUUID())
-            .idempotencyKey(request.getIdempotencyKey())
-            .sourceAccountNumber(request.getSourceAccountNumber())
-            .destinationAccountNumber(request.getDestinationAccountNumber())
-            .amount(request.getAmount())
-            .description(request.getDescription())
-            .build();
+        TransferResponse response = transferService.createTransfer(request);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -64,10 +77,9 @@ public class TransferController {
     public ResponseEntity<TransferResponse> getTransferById(@PathVariable UUID id) {
         log.info("Consultando transferencia con ID: {}", id);
         
-        // TODO: Implementar lógica
-        // TransferResponse response = transferService.getTransferById(id);
+        TransferResponse response = transferService.getTransferById(id);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -77,12 +89,11 @@ public class TransferController {
      * @return Lista de transferencias
      */
     @GetMapping("/account/{accountId}")
-    public ResponseEntity<?> getTransfersByAccount(@PathVariable UUID accountId) {
+    public ResponseEntity<List<TransferResponse>> getTransfersByAccount(@PathVariable UUID accountId) {
         log.info("Consultando transferencias para cuenta ID: {}", accountId);
         
-        // TODO: Implementar lógica
-        // List<TransferResponse> transfers = transferService.getTransfersByAccount(accountId);
+        List<TransferResponse> transfers = transferService.getTransfersByAccount(accountId);
         
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(transfers);
     }
 }
